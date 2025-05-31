@@ -69,6 +69,42 @@
           <label>Left (px):</label>
           <input type="number" id="inputLeft" />
 
+          <label>Width (px):</label>
+          <input type="number" id="inputWidth" min="10" />
+
+          <label>Height (px):</label>
+          <input type="number" id="inputHeight" min="10" />
+
+          <!-- Image URL input -->
+          <div class="form-group" id="imageSrcGroup" style="display: none">
+            <label for="inputImageSrc">Image URL</label>
+            <input
+              type="text"
+              id="inputImageSrc"
+              placeholder="Enter image src URL"
+            />
+          </div>
+
+          <!-- Link URL input -->
+          <div class="form-group" id="linkHrefGroup" style="display: none">
+            <label for="inputLinkHref">Link URL</label>
+            <input
+              type="text"
+              id="inputLinkHref"
+              placeholder="Enter link href URL"
+            />
+          </div>
+
+          <!-- Link Text input -->
+          <div class="form-group" id="linkTextGroup" style="display: none">
+            <label for="inputLinkText">Link Text</label>
+            <input
+              type="text"
+              id="inputLinkText"
+              placeholder="Enter link text"
+            />
+          </div>
+
           <button type="button" id="applyBtn">Apply Changes</button>
           <button
             type="button"
@@ -82,7 +118,7 @@
     </div>
 
     <footer>
-      <p>© 2025 Simple Site Builder,created by Yash Rathod</p>
+      <p>© 2025 Simple Site Builder, created by Yash Rathod</p>
     </footer>
 
     <script src="/script.js"></script>

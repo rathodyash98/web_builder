@@ -2,8 +2,27 @@ const sidebarElements = document.querySelectorAll(".element-item");
 const canvas = document.getElementById("canvas");
 const editForm = document.getElementById("editForm");
 
+// Inputs
+const inputText = document.getElementById("inputText");
+const inputFontSize = document.getElementById("inputFontSize");
+const inputFontColor = document.getElementById("inputFontColor");
+const inputBgColor = document.getElementById("inputBgColor");
+const inputHoverBgColor = document.getElementById("inputHoverBgColor");
+const inputPosition = document.getElementById("inputPosition");
+const inputTop = document.getElementById("inputTop");
+const inputLeft = document.getElementById("inputLeft");
+const inputWidth = document.getElementById("inputWidth");
+const inputHeight = document.getElementById("inputHeight");
+
+const inputImageSrc = document.getElementById("inputImageSrc");
+const inputLinkHref = document.getElementById("inputLinkHref");
+const inputLinkText = document.getElementById("inputLinkText");
+
+const imageSrcGroup = document.getElementById("imageSrcGroup");
+const linkHrefGroup = document.getElementById("linkHrefGroup");
+const linkTextGroup = document.getElementById("linkTextGroup");
+
 let selectedElement = null;
-let hoverStyleTag = null;
 
 // Add dragstart listeners on sidebar items
 sidebarElements.forEach((el) => {
@@ -25,10 +44,8 @@ function handleDrop(event) {
 
   const newEl = createElementByType(type);
 
-  // Append to canvas
   canvas.appendChild(newEl);
 
-  // Make it draggable inside canvas (for reposition)
   makeElementDraggable(newEl);
 
   selectElement(newEl);
@@ -97,195 +114,295 @@ function selectElement(el) {
 
 // Fill edit form inputs with selected element's properties
 function fillEditForm(el) {
-  // Text content (if text-based)
-  const textInputs = ["H1", "P", "BUTTON", "A", "DIV"];
-  document.getElementById("inputText").value = textInputs.includes(el.tagName)
-    ? el.textContent
-    : "";
+  // Show/hide image and link inputs depending on element type
+  if (el.tagName === "IMG") {
+    imageSrcGroup.style.display = "block";
+  } else {
+    imageSrcGroup.style.display = "none";
+  }
+
+  if (el.tagName === "A") {
+    linkHrefGroup.style.display = "block";
+    linkTextGroup.style.display = "block";
+  } else {
+    linkHrefGroup.style.display = "none";
+    linkTextGroup.style.display = "none";
+  }
+
+  // Text content (for elements that support text)
+  if ("textContent" in el && el.tagName !== "IMG") {
+    inputText.value = el.textContent || "";
+    inputText.disabled = false;
+  } else if (el.tagName === "IMG") {
+    inputText.value = "";
+    inputText.disabled = true;
+  } else {
+    inputText.value = "";
+    inputText.disabled = true;
+  }
 
   // Font size
-  document.getElementById("inputFontSize").value =
-    parseInt(window.getComputedStyle(el).fontSize) || "";
+  const fontSize = window.getComputedStyle(el).fontSize;
+  inputFontSize.value = parseInt(fontSize) || "";
 
   // Font color
-  document.getElementById("inputFontColor").value = rgbToHex(
-    window.getComputedStyle(el).color
-  );
+  const fontColor = window.getComputedStyle(el).color;
+  inputFontColor.value = rgbToHex(fontColor);
 
   // Background color
-  document.getElementById("inputBgColor").value = rgbToHex(
-    window.getComputedStyle(el).backgroundColor
-  );
+  const bgColor = window.getComputedStyle(el).backgroundColor;
+  inputBgColor.value = rgbToHex(bgColor);
 
-  // Hover background color stored in dataset
-  document.getElementById("inputHoverBgColor").value =
-    el.dataset.hoverBgColor || "#ffffff";
+  // Hover background color - no direct way to get, leave as default
+  inputHoverBgColor.value = "#ffffff";
 
   // Position
-  document.getElementById("inputPosition").value =
-    el.style.position || "static";
+  inputPosition.value = el.style.position || "static";
 
-  // Top and left (for positioned elements)
-  document.getElementById("inputTop").value = el.style.top
-    ? parseInt(el.style.top)
-    : 0;
-  document.getElementById("inputLeft").value = el.style.left
-    ? parseInt(el.style.left)
-    : 0;
+  // Top & Left
+  inputTop.value = parseInt(el.style.top) || 0;
+  inputLeft.value = parseInt(el.style.left) || 0;
+
+  // Width & Height
+  inputWidth.value = parseInt(el.style.width) || el.offsetWidth || "";
+  inputHeight.value = parseInt(el.style.height) || el.offsetHeight || "";
+
+  // Image src
+  if (el.tagName === "IMG") {
+    inputImageSrc.value = el.src || "";
+  } else {
+    inputImageSrc.value = "";
+  }
+
+  // Link href and text
+  if (el.tagName === "A") {
+    inputLinkHref.value = el.href || "";
+    inputLinkText.value = el.textContent || "";
+  } else {
+    inputLinkHref.value = "";
+    inputLinkText.value = "";
+  }
 }
 
-// Utility to convert rgb() to hex
+// Apply changes button click handler
+document.getElementById("applyBtn").addEventListener("click", () => {
+  if (!selectedElement) return;
+
+  // Text content
+  if (!inputText.disabled) {
+    if (selectedElement.tagName !== "IMG") {
+      selectedElement.textContent = inputText.value;
+    }
+  }
+
+  // Font size
+  if (inputFontSize.value) {
+    selectedElement.style.fontSize = inputFontSize.value + "px";
+  } else {
+    selectedElement.style.fontSize = "";
+  }
+
+  // Font color
+  if (inputFontColor.value) {
+    selectedElement.style.color = inputFontColor.value;
+  } else {
+    selectedElement.style.color = "";
+  }
+
+  // Background color
+  if (inputBgColor.value) {
+    selectedElement.style.backgroundColor = inputBgColor.value;
+  } else {
+    selectedElement.style.backgroundColor = "";
+  }
+
+  // Hover background color - set via a custom data attribute and CSS class
+  if (inputHoverBgColor.value) {
+    selectedElement.dataset.hoverBgColor = inputHoverBgColor.value;
+    addHoverStyle(selectedElement);
+  } else {
+    delete selectedElement.dataset.hoverBgColor;
+    removeHoverStyle(selectedElement);
+  }
+
+  // Position
+  selectedElement.style.position = inputPosition.value;
+
+  // Top & Left (only if position != static)
+  if (inputPosition.value !== "static") {
+    selectedElement.style.top = inputTop.value + "px";
+    selectedElement.style.left = inputLeft.value + "px";
+  } else {
+    selectedElement.style.top = "";
+    selectedElement.style.left = "";
+  }
+
+  // Width & Height
+  if (inputWidth.value) {
+    selectedElement.style.width = inputWidth.value + "px";
+  } else {
+    selectedElement.style.width = "";
+  }
+  if (inputHeight.value) {
+    selectedElement.style.height = inputHeight.value + "px";
+  } else {
+    selectedElement.style.height = "";
+  }
+
+  // Image src
+  if (selectedElement.tagName === "IMG") {
+    selectedElement.src = inputImageSrc.value || selectedElement.src;
+  }
+
+  // Link href and text
+  if (selectedElement.tagName === "A") {
+    selectedElement.href = inputLinkHref.value || "#";
+    selectedElement.textContent = inputLinkText.value || "";
+  }
+});
+
+// Delete element button
+document.getElementById("deleteBtn").addEventListener("click", () => {
+  if (!selectedElement) return;
+  selectedElement.remove();
+  selectedElement = null;
+  resetForm();
+  showPlaceholderIfEmpty();
+});
+
+// Deselect element if click outside
+canvas.addEventListener("click", () => {
+  if (selectedElement) {
+    selectedElement.classList.remove("selected");
+    selectedElement = null;
+    resetForm();
+  }
+});
+
+function resetForm() {
+  editForm.reset();
+  imageSrcGroup.style.display = "none";
+  linkHrefGroup.style.display = "none";
+  linkTextGroup.style.display = "none";
+  inputText.disabled = false;
+}
+
+function showPlaceholderIfEmpty() {
+  if (canvas.children.length === 0) {
+    const p = document.createElement("p");
+    p.className = "placeholder";
+    p.textContent = "Drag elements here";
+    canvas.appendChild(p);
+  }
+}
+
+// Convert rgb() to hex color string
 function rgbToHex(rgb) {
-  if (!rgb || rgb === "transparent") return "#ffffff";
-  const rgbArr = rgb.match(/\d+/g);
-  if (!rgbArr) return "#ffffff";
+  if (!rgb) return "#000000";
+
+  const result = /^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(rgb);
+  if (!result) return "#000000";
+
+  const r = parseInt(result[1]);
+  const g = parseInt(result[2]);
+  const b = parseInt(result[3]);
+
   return (
     "#" +
-    rgbArr
+    [r, g, b]
       .map((x) => {
-        const hex = parseInt(x).toString(16);
+        const hex = x.toString(16);
         return hex.length === 1 ? "0" + hex : hex;
       })
       .join("")
   );
 }
 
-// Apply changes from form to selected element
-document.getElementById("applyBtn").addEventListener("click", () => {
-  if (!selectedElement) return alert("Select an element first.");
+// Add hover background color style dynamically for element
+function addHoverStyle(el) {
+  if (!el.dataset.hoverBgColor) return;
 
-  // Text content
-  const text = document.getElementById("inputText").value;
-  if (["H1", "P", "BUTTON", "A", "DIV"].includes(selectedElement.tagName)) {
-    selectedElement.textContent = text;
+  // Create a style tag for this element if not exists
+  let styleTag = el._hoverStyleTag;
+  if (!styleTag) {
+    styleTag = document.createElement("style");
+    document.head.appendChild(styleTag);
+    el._hoverStyleTag = styleTag;
   }
 
-  // Font size
-  const fontSize = document.getElementById("inputFontSize").value;
-  if (fontSize) selectedElement.style.fontSize = fontSize + "px";
+  const id =
+    el.dataset.hoverStyleId ||
+    `hover-bg-${Math.random().toString(36).slice(2)}`;
+  el.dataset.hoverStyleId = id;
+  el.classList.add(id);
 
-  // Font color
-  const fontColor = document.getElementById("inputFontColor").value;
-  selectedElement.style.color = fontColor;
-
-  // Background color
-  const bgColor = document.getElementById("inputBgColor").value;
-  selectedElement.style.backgroundColor = bgColor;
-
-  // Position
-  const position = document.getElementById("inputPosition").value;
-  selectedElement.style.position = position;
-
-  // Top & Left offsets
-  const top = document.getElementById("inputTop").value;
-  const left = document.getElementById("inputLeft").value;
-  if (position !== "static") {
-    selectedElement.style.top = top ? top + "px" : "0";
-    selectedElement.style.left = left ? left + "px" : "0";
-  } else {
-    selectedElement.style.top = "";
-    selectedElement.style.left = "";
-  }
-
-  // Hover background color: store in data attribute and update style
-  const hoverColor = document.getElementById("inputHoverBgColor").value;
-  selectedElement.dataset.hoverBgColor = hoverColor;
-  updateHoverStyle(selectedElement, hoverColor);
-});
-
-// Delete selected element
-document.getElementById("deleteBtn").addEventListener("click", () => {
-  if (!selectedElement) return alert("Select an element to delete.");
-  selectedElement.remove();
-  selectedElement = null;
-  editForm.reset();
-});
-
-// Update hover style for element
-function updateHoverStyle(el, hoverColor) {
-  // Remove old style if any
-  if (el._hoverStyleTag) {
-    el._hoverStyleTag.remove();
-  }
-
-  // Create new style tag
-  const style = document.createElement("style");
-  style.innerHTML = `
-    .canvas-element[data-id="${el.dataset.id}"]:hover {
-      background-color: ${hoverColor} !important;
+  styleTag.textContent = `
+    .${id}:hover {
+      background-color: ${el.dataset.hoverBgColor} !important;
     }
   `;
-  document.head.appendChild(style);
-
-  el._hoverStyleTag = style;
 }
 
-// Make element draggable inside canvas for repositioning
+function removeHoverStyle(el) {
+  if (el._hoverStyleTag) {
+    el._hoverStyleTag.remove();
+    el._hoverStyleTag = null;
+  }
+  if (el.dataset.hoverStyleId) {
+    el.classList.remove(el.dataset.hoverStyleId);
+    delete el.dataset.hoverStyleId;
+  }
+}
+
+// Make element draggable inside canvas by mouse dragging
 function makeElementDraggable(el) {
-  el.style.position = "relative";
+  let isDragging = false;
+  let startX, startY, origX, origY;
 
-  el.setAttribute("draggable", true);
+  el.style.position = el.style.position || "absolute";
 
-  el.addEventListener("dragstart", dragStartInsideCanvas);
-  el.addEventListener("dragend", dragEndInsideCanvas);
+  el.addEventListener("mousedown", (e) => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    e.preventDefault();
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+
+    origX = parseInt(el.style.left) || el.offsetLeft;
+    origY = parseInt(el.style.top) || el.offsetTop;
+
+    selectElement(el);
+  });
+
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    let newX = origX + dx;
+    let newY = origY + dy;
+
+    // Boundaries inside canvas
+    const canvasRect = canvas.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+
+    if (newX < 0) newX = 0;
+    if (newY < 0) newY = 0;
+    if (newX + elRect.width > canvasRect.width)
+      newX = canvasRect.width - elRect.width;
+    if (newY + elRect.height > canvasRect.height)
+      newY = canvasRect.height - elRect.height;
+
+    el.style.left = newX + "px";
+    el.style.top = newY + "px";
+
+    inputTop.value = newY;
+    inputLeft.value = newX;
+    inputPosition.value = "absolute";
+    selectedElement.style.position = "absolute";
+  });
 }
-
-// Variables to track drag position inside canvas
-let dragTarget = null;
-let startX, startY, origX, origY;
-
-function dragStartInsideCanvas(e) {
-  dragTarget = e.target;
-  startX = e.clientX;
-  startY = e.clientY;
-  origX = parseInt(dragTarget.style.left) || 0;
-  origY = parseInt(dragTarget.style.top) || 0;
-
-  // For repositioning, element must be positioned absolutely or relative
-  if (!["absolute", "relative", "fixed"].includes(dragTarget.style.position)) {
-    dragTarget.style.position = "relative";
-    dragTarget.style.left = "0px";
-    dragTarget.style.top = "0px";
-  }
-
-  // To allow drop outside of canvas default behavior
-  e.dataTransfer.setDragImage(new Image(), 0, 0);
-}
-
-function dragEndInsideCanvas(e) {
-  if (!dragTarget) return;
-
-  const dx = e.clientX - startX;
-  const dy = e.clientY - startY;
-
-  let newLeft = origX + dx;
-  let newTop = origY + dy;
-
-  // Boundaries inside canvas
-  const rect = canvas.getBoundingClientRect();
-  const elRect = dragTarget.getBoundingClientRect();
-
-  // Clamp left & top inside canvas
-  if (newLeft < 0) newLeft = 0;
-  if (newTop < 0) newTop = 0;
-  if (newLeft + elRect.width > rect.width) newLeft = rect.width - elRect.width;
-  if (newTop + elRect.height > rect.height)
-    newTop = rect.height - elRect.height;
-
-  dragTarget.style.left = newLeft + "px";
-  dragTarget.style.top = newTop + "px";
-
-  dragTarget = null;
-
-  // Update form values if dragged selected element
-  if (selectedElement) fillEditForm(selectedElement);
-}
-
-// Deselect element on canvas click outside
-canvas.addEventListener("click", () => {
-  if (selectedElement) {
-    selectedElement.classList.remove("selected");
-    selectedElement = null;
-    editForm.reset();
-  }
-});
