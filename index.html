@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Website Builder</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Website Builder</h1>
+    </header>
+
+    <div class="builder-container">
+      <section class="sidebar">
+        <h2>Elements</h2>
+        <div class="element-item" draggable="true" data-type="h1">
+          Heading 1
+        </div>
+        <div class="element-item" draggable="true" data-type="p">Paragraph</div>
+        <div class="element-item" draggable="true" data-type="button">
+          Button
+        </div>
+        <div class="element-item" draggable="true" data-type="image">Image</div>
+        <div class="element-item" draggable="true" data-type="link">Link</div>
+        <div class="element-item" draggable="true" data-type="div">
+          Container
+        </div>
+      </section>
+
+      <section
+        id="canvas"
+        class="canvas"
+        ondragover="event.preventDefault()"
+        ondrop="handleDrop(event)"
+      >
+        <p class="placeholder">Drag elements here</p>
+      </section>
+
+      <section class="editor">
+        <h2>Edit Properties</h2>
+        <form id="editForm">
+          <label>Text Content:</label>
+          <input type="text" id="inputText" placeholder="Enter text" />
+
+          <label>Font Size (px):</label>
+          <input type="number" id="inputFontSize" min="8" max="72" />
+
+          <label>Font Color:</label>
+          <input type="color" id="inputFontColor" />
+
+          <label>Background Color:</label>
+          <input type="color" id="inputBgColor" />
+
+          <label>Hover Background Color:</label>
+          <input type="color" id="inputHoverBgColor" />
+
+          <label>Position:</label>
+          <select id="inputPosition">
+            <option value="static">Static</option>
+            <option value="relative">Relative</option>
+            <option value="absolute">Absolute</option>
+            <option value="fixed">Fixed</option>
+          </select>
+
+          <label>Top (px):</label>
+          <input type="number" id="inputTop" />
+
+          <label>Left (px):</label>
+          <input type="number" id="inputLeft" />
+
+          <button type="button" id="applyBtn">Apply Changes</button>
+          <button
+            type="button"
+            id="deleteBtn"
+            style="background: #d9534f; color: white"
+          >
+            Delete Element
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <footer>
+      <p>© 2025 Simple Site Builder,created by Yash Rathod</p>
+    </footer>
+
+    <script src="/script.js"></script>
+  </body>
+</html>
